@@ -4,176 +4,365 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Print Station</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root{
-    --bg:#eef1f4; --panel:#ffffff; --ink:#1d2733; --sub:#6b7684;
-    --accent:#0057a8; --accent2:#00a19a; --border:#dce1e7;
-    padding-top:env(safe-area-inset-top,0px);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#12161b; --panel:#1b2028; --ink:#eef1f4; --sub:#8b95a3; --border:#2b323c;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#12161b; --panel:#1b2028; --ink:#eef1f4; --sub:#8b95a3; --border:#2b323c;
-  }
-  *{box-sizing:border-box;}
-  html,body{height:100%;}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    display:flex; flex-direction:column; align-items:center;
-    min-height:100%;
-  }
-  header{
-    width:100%; max-width:480px; background:linear-gradient(135deg,var(--accent),var(--accent2));
-    color:#fff; padding:calc(20px + env(safe-area-inset-top,0px)) 20px 22px;
-    border-radius:0 0 22px 22px;
-  }
-  header h1{margin:0; font-size:1.25rem; font-weight:700;}
-  header p{margin:4px 0 0; font-size:.82rem; opacity:.9;}
-  main{width:100%; max-width:480px; padding:18px 16px 40px; flex:1;}
-
-  .screen{display:none;}
-  .screen.active{display:block;}
-
-  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:6px;}
-  .tile{
-    background:var(--panel); border:1px solid var(--border); border-radius:16px;
-    padding:20px 14px; text-align:center; cursor:pointer;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .tile:active{opacity:.75;}
-  .tile .ic{font-size:2rem; margin-bottom:8px;}
-  .tile .lb{font-size:.85rem; font-weight:600;}
-
-  .backrow{display:flex; align-items:center; gap:8px; margin:2px 0 16px; color:var(--accent); font-weight:600; font-size:.9rem;}
-  .backrow span{cursor:pointer;}
-
-  .card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px;}
-  .card label{display:block; font-size:.75rem; color:var(--sub); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:.03em;}
-  .row{display:flex; gap:10px;}
-  .row .card{flex:1;}
-  select{
-    width:100%; font-size:.95rem; padding:10px; border-radius:10px;
-    border:1px solid var(--border); background:var(--bg); color:var(--ink); font-family:inherit;
-  }
-  textarea{
-    width:100%; min-height:260px; border:0; padding:0; resize:vertical;
-    font-family:Georgia,serif; font-size:16px; background:transparent; color:var(--ink); outline:none;
-  }
-  #photoPreview{display:none; text-align:center;}
-  #photoPreview img{max-width:100%; border-radius:8px; margin-top:8px;}
-  input[type=file]{font-size:.85rem; color:var(--sub);}
-
-  .printbtn{
-    width:100%; padding:16px; border:0; border-radius:14px; margin-top:4px;
-    background:var(--accent); color:#fff; font-size:1rem; font-weight:700;
-    cursor:pointer; -webkit-tap-highlight-color:transparent;
-  }
-  .printbtn:active{opacity:.85;}
-  .note{color:var(--sub); font-size:.75rem; text-align:center; margin-top:12px;}
-
-  @media print{
-    header, .backrow, .card label, select, .printbtn, .note, #printDocTitle{display:none !important;}
-    body{background:#fff;}
-    main{max-width:none; padding:0;}
-    .card{border:0; padding:0; margin:0;}
-    textarea{font-size:12pt;}
-    #photoPreview{display:block !important;}
-  }
+:root{--bg:#eef1f4;--panel:#fff;--ink:#1d2733;--sub:#6b7684;--accent:#0057a8;--accent2:#00a19a;--border:#dce1e7;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161b;--panel:#1b2028;--ink:#eef1f4;--sub:#8b95a3;--border:#2b323c;}}
+:root[data-theme="dark"]{--bg:#12161b;--panel:#1b2028;--ink:#eef1f4;--sub:#8b95a3;--border:#2b323c;}
+*{box-sizing:border-box;} html,body{height:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100%;}
+header{width:100%;max-width:480px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:calc(20px + env(safe-area-inset-top,0px)) 20px 22px;border-radius:0 0 22px 22px;}
+header h1{margin:0;font-size:1.25rem;font-weight:700;} header p{margin:4px 0 0;font-size:.82rem;opacity:.9;}
+main{width:100%;max-width:480px;padding:18px 16px 40px;flex:1;}
+.screen{display:none;} .screen.active{display:block;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+.tile{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px 14px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.tile:active{opacity:.75;} .tile .ic{font-size:2rem;margin-bottom:8px;} .tile .lb{font-size:.85rem;font-weight:600;}
+.backrow{display:flex;align-items:center;gap:8px;margin:2px 0 16px;color:var(--accent);font-weight:600;font-size:.9rem;}
+.backrow span{cursor:pointer;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
+.card label{display:block;font-size:.75rem;color:var(--sub);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+.row{display:flex;gap:10px;} .row .card{flex:1;} .row3{display:flex;gap:8px;} .row3 .card{flex:1;padding:10px;}
+select,input[type=text]{width:100%;font-size:.9rem;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font-family:inherit;}
+textarea{width:100%;min-height:220px;border:0;padding:0;resize:vertical;font-family:Georgia,serif;font-size:16px;background:transparent;color:var(--ink);outline:none;}
+textarea.b{font-weight:bold;} textarea.i{font-style:italic;} textarea.u{text-decoration:underline;}
+#photoPreview{display:none;text-align:center;} #photoPreview img{max-width:100%;border-radius:8px;margin-top:8px;}
+input[type=file]{font-size:.85rem;color:var(--sub);}
+.printbtn{width:100%;padding:16px;border:0;border-radius:14px;margin-top:4px;background:var(--accent);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.printbtn:active{opacity:.85;} .note{color:var(--sub);font-size:.75rem;text-align:center;margin-top:12px;}
+.ghostbtn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--ink);font-size:.85rem;text-align:center;cursor:pointer;}
+.drop{border:2px dashed var(--border);border-radius:14px;padding:20px 14px;text-align:center;color:var(--sub);font-size:.82rem;margin-bottom:14px;}
+.canvasWrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px;text-align:center;overflow:hidden;}
+#editCanvas{max-width:100%;border-radius:6px;background:#fff;touch-action:none;}
+.toolrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.toolbtn{flex:1;min-width:64px;padding:9px 6px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--ink);font-size:.72rem;text-align:center;cursor:pointer;}
+.toolbtn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.toolbtn:active{opacity:.7;}
+input[type=range]{width:100%;}
+.gallery{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;}
+.gthumb{width:56px;height:56px;border-radius:8px;object-fit:cover;border:2px solid transparent;flex:none;cursor:pointer;}
+.gthumb.sel{border-color:var(--accent);}
+.swrow{display:flex;gap:8px;margin-bottom:10px;}
+.sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);cursor:pointer;}
+.sw.sel{border-color:var(--accent);}
+#qrbox{display:flex;justify-content:center;padding:20px 0;}
+.histrow{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.85rem;}
+.printOnly{display:none;}
+@media print{
+ header,.backrow,.card label,select,.printbtn,.note,.toolrow,.drop,.gallery,.swrow,#qrIntro,.ghostbtn{display:none !important;}
+ body{background:#fff;} main{max-width:none;padding:0;} .card{border:0;padding:0;margin:0;}
+ textarea{font-size:12pt;} #photoPreview{display:block !important;} .canvasWrap{border:0;padding:0;}
+ .printOnly{display:block !important;}
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>Print Station</h1>
-  <p>Print documents & photos from this device</p>
-</header>
+<header><h1>Print Station</h1><p>Print, edit & manage everything from this device</p></header>
 <main>
 
-  <!-- HOME -->
-  <div class="screen active" id="home">
-    <div class="grid">
-      <div class="tile" onclick="go('doc')">
-        <div class="ic">📄</div>
-        <div class="lb">Print Document</div>
-      </div>
-      <div class="tile" onclick="go('photo')">
-        <div class="ic">🖼️</div>
-        <div class="lb">Print Photo</div>
-      </div>
-    </div>
-  </div>
+<!-- HOME -->
+<div class="screen active" id="home">
+ <div class="grid">
+  <div class="tile" onclick="go('doc')"><div class="ic">📄</div><div class="lb">Print Document</div></div>
+  <div class="tile" onclick="go('photo')"><div class="ic">🖼️</div><div class="lb">Print Photo</div></div>
+  <div class="tile" onclick="go('edit')"><div class="ic">✏️</div><div class="lb">Upload & Edit</div></div>
+  <div class="tile" onclick="go('qr')"><div class="ic">▦</div><div class="lb">QR Code</div></div>
+  <div class="tile" onclick="renderHistory();go('hist')"><div class="ic">🕘</div><div class="lb">Print History</div></div>
+ </div>
+</div>
 
-  <!-- DOCUMENT -->
-  <div class="screen" id="doc">
-    <div class="backrow"><span onclick="go('home')">← Home</span></div>
-    <div class="row">
-      <div class="card">
-        <label>Paper size</label>
-        <select id="docSize"><option>Letter</option><option>A4</option><option>Legal</option></select>
-      </div>
-      <div class="card">
-        <label>Copies</label>
-        <select id="docCopies"><option>1</option><option>2</option><option>3</option><option>5</option></select>
-      </div>
-    </div>
-    <div class="card">
-      <label>Document text</label>
-      <textarea id="docText" placeholder="Type or paste your document here…"></textarea>
-    </div>
-    <button class="printbtn" onclick="printDoc()">Print Document</button>
-    <div class="note">Opens your device's print dialog — choose your Epson there.</div>
-  </div>
+<!-- DOCUMENT -->
+<div class="screen" id="doc">
+ <div class="backrow"><span onclick="go('home')">← Home</span></div>
+ <div class="row">
+  <div class="card"><label>Paper size</label><select id="docSize"><option>Letter</option><option>A4</option><option>Legal</option><option>Avery 5160 Labels</option></select></div>
+  <div class="card"><label>Copies</label><select id="docCopies"><option>1</option><option>2</option><option>3</option><option>5</option></select></div>
+ </div>
+ <div class="row">
+  <div class="card"><label>Margins</label><select id="docMargin" onchange="applyMargin()"><option value="24px">Normal</option><option value="8px">Narrow</option><option value="48px">Wide</option></select></div>
+  <div class="card"><label>Color</label><select id="docColor"><option>Color</option><option>Black & White</option></select></div>
+ </div>
+ <div class="row">
+  <div class="card"><label>Font</label><select id="docFont" onchange="applyFont()"><option value="Georgia,serif">Serif</option><option value="Arial,sans-serif">Sans-serif</option><option value="'Courier New',monospace">Monospace</option></select></div>
+  <div class="card"><label>Size</label><select id="docFontSize" onchange="applyFont()"><option value="14px">Small</option><option value="16px" selected>Normal</option><option value="20px">Large</option></select></div>
+ </div>
+ <div class="row3" style="margin-bottom:14px;">
+  <div class="card"><div class="toolbtn" id="bBold" onclick="toggleStyle('b')" style="width:100%;">B</div></div>
+  <div class="card"><div class="toolbtn" id="bItal" onclick="toggleStyle('i')" style="width:100%;">I</div></div>
+  <div class="card"><div class="toolbtn" id="bUnd" onclick="toggleStyle('u')" style="width:100%;">U</div></div>
+ </div>
+ <div class="card"><label>Header text (optional)</label><input type="text" id="docHeader" placeholder="e.g. Company Name"></div>
+ <div class="card"><label>Footer text (optional)</label><input type="text" id="docFooter" placeholder="e.g. Confidential"></div>
+ <div class="card"><label>Document text</label><textarea id="docText" placeholder="Type or paste your document here…"></textarea></div>
+ <div class="row" style="margin-bottom:14px;">
+  <div class="ghostbtn" onclick="saveDraft()">💾 Save Draft</div>
+  <div class="ghostbtn" onclick="loadDraft()">📂 Load Draft</div>
+ </div>
+ <div id="docHeaderPrint" class="printOnly"></div>
+ <button class="printbtn" onclick="printDoc()">Print Document</button>
+ <div id="docFooterPrint" class="printOnly note"></div>
+ <div class="note">Opens your device's print dialog — choose your Epson there.</div>
+</div>
 
-  <!-- PHOTO -->
-  <div class="screen" id="photo">
-    <div class="backrow"><span onclick="go('home')">← Home</span></div>
-    <div class="row">
-      <div class="card">
-        <label>Layout</label>
-        <select id="photoLayout"><option>Full page</option><option>4×6</option><option>Borderless</option></select>
-      </div>
-      <div class="card">
-        <label>Copies</label>
-        <select id="photoCopies"><option>1</option><option>2</option><option>3</option></select>
-      </div>
-    </div>
-    <div class="card">
-      <label>Choose photo</label>
-      <input type="file" id="photoInput" accept="image/*">
-      <div id="photoPreview"><img id="photoImg" alt=""></div>
-    </div>
-    <button class="printbtn" onclick="printPhoto()">Print Photo</button>
-    <div class="note">Opens your device's print dialog — choose your Epson there.</div>
+<!-- PHOTO -->
+<div class="screen" id="photo">
+ <div class="backrow"><span onclick="go('home')">← Home</span></div>
+ <div class="row">
+  <div class="card"><label>Layout</label><select id="photoLayout"><option>Full page</option><option>4×6</option><option>Borderless</option></select></div>
+  <div class="card"><label>Copies</label><select id="photoCopies"><option>1</option><option>2</option><option>3</option></select></div>
+ </div>
+ <div class="row">
+  <div class="card"><label>Print in</label><select id="photoColor" onchange="applyPhotoFilter()"><option>Color</option><option>Black & White</option></select></div>
+  <div class="card"><label>Sides</label><select id="photoSides"><option>Single-sided</option><option>Double-sided</option></select></div>
+ </div>
+ <div class="card"><label>Choose photo</label><input type="file" id="photoInput" accept="image/*"><div id="photoPreview"><img id="photoImg" alt=""></div></div>
+ <button class="printbtn" onclick="printPhoto()">Print Photo</button>
+ <div class="note">Opens your device's print dialog — choose your Epson there.</div>
+</div>
+
+<!-- UPLOAD & EDIT -->
+<div class="screen" id="edit">
+ <div class="backrow"><span onclick="go('home')">← Home</span></div>
+ <div class="drop">Upload photos, then crop, draw, duplicate, rotate or filter them before printing.</div>
+ <div class="card"><label>Add photo</label><input type="file" id="editInput" accept="image/*"></div>
+ <div class="gallery" id="gallery"></div>
+ <div class="canvasWrap"><canvas id="editCanvas" width="600" height="450"></canvas></div>
+ <div class="toolrow">
+  <div class="toolbtn" onclick="rotateP(-90)">⟲ Rotate</div>
+  <div class="toolbtn" onclick="rotateP(90)">⟳ Rotate</div>
+  <div class="toolbtn" onclick="flipP('h')">↔ Flip</div>
+  <div class="toolbtn" onclick="flipP('v')">↕ Flip</div>
+  <div class="toolbtn" onclick="duplicateP()">⧉ Duplicate</div>
+ </div>
+ <div class="toolrow">
+  <div class="toolbtn" id="cropBtn" onclick="toggleCrop()">▦ Crop</div>
+  <div class="toolbtn" onclick="applyCrop()">✓ Apply Crop</div>
+  <div class="toolbtn" id="drawBtn" onclick="toggleDraw()">✎ Draw</div>
+  <div class="toolbtn" onclick="clearStrokes()">⌫ Clear Draw</div>
+  <div class="toolbtn" onclick="deleteP()">🗑 Delete</div>
+ </div>
+ <div class="card" id="drawOptions" style="display:none;">
+  <label>Brush color</label>
+  <div class="swrow">
+   <div class="sw sel" style="background:#e53935" onclick="setColor('#e53935',this)"></div>
+   <div class="sw" style="background:#1e88e5" onclick="setColor('#1e88e5',this)"></div>
+   <div class="sw" style="background:#43a047" onclick="setColor('#43a047',this)"></div>
+   <div class="sw" style="background:#111" onclick="setColor('#111',this)"></div>
+   <div class="sw" style="background:#fdd835" onclick="setColor('#fdd835',this)"></div>
   </div>
+  <label>Brush size</label>
+  <input type="range" id="brushSize" min="2" max="20" value="6">
+ </div>
+ <div class="row">
+  <div class="card"><label>Brightness</label><input type="range" id="bright" min="50" max="150" value="100" oninput="draw()"></div>
+  <div class="card"><label>Contrast</label><input type="range" id="contrast" min="50" max="150" value="100" oninput="draw()"></div>
+ </div>
+ <div class="row">
+  <div class="card"><label>Saturation</label><input type="range" id="saturate" min="0" max="200" value="100" oninput="draw()"></div>
+  <div class="card"><label>Filter</label><select id="photoFilterMode" onchange="draw()"><option value="none">None</option><option value="grayscale(1)">Black & White</option><option value="sepia(1)">Sepia</option></select></div>
+ </div>
+ <div class="card"><label>Caption (optional)</label><input type="text" id="caption" oninput="draw()" placeholder="Add a line under the photo"></div>
+ <div class="card"><label>Photos per page</label><select id="cols"><option value="1">1 (full page)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+ <button class="printbtn" onclick="printEdit()">Print This</button>
+ <div class="note">Opens your device's print dialog — choose your Epson there.</div>
+</div>
+
+<!-- QR CODE -->
+<div class="screen" id="qr">
+ <div class="backrow"><span onclick="go('home')">← Home</span></div>
+ <div class="card" id="qrIntro"><label>Text or link</label><input type="text" id="qrText" placeholder="https://example.com" oninput="makeQR()"></div>
+ <div class="canvasWrap"><div id="qrbox"></div></div>
+ <button class="printbtn" onclick="printQR()">Print QR Code</button>
+ <div class="note">Opens your device's print dialog — choose your Epson there.</div>
+</div>
+
+<!-- HISTORY -->
+<div class="screen" id="hist">
+ <div class="backrow"><span onclick="go('home')">← Home</span></div>
+ <div class="card" id="histList"></div>
+ <div class="ghostbtn" onclick="clearHistory()">Clear History</div>
+</div>
 
 </main>
 <script>
-function go(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function logHistory(label){
+ try{
+  const list=JSON.parse(localStorage.getItem('ps_history')||'[]');
+  list.unshift({label:label,time:new Date().toLocaleString()});
+  localStorage.setItem('ps_history', JSON.stringify(list.slice(0,20)));
+ }catch(e){}
 }
+function renderHistory(){
+ let list=[]; try{list=JSON.parse(localStorage.getItem('ps_history')||'[]');}catch(e){}
+ const el=document.getElementById('histList');
+ el.innerHTML = list.length? list.map(h=>'<div class="histrow"><span>'+h.label+'</span><span style="color:var(--sub)">'+h.time+'</span></div>').join('') : '<div style="color:var(--sub);font-size:.85rem;">No prints yet.</div>';
+}
+function clearHistory(){ try{localStorage.removeItem('ps_history');}catch(e){} renderHistory(); }
+
+/* ---- DOCUMENT ---- */
+function applyFont(){
+ const t=document.getElementById('docText');
+ t.style.fontFamily=document.getElementById('docFont').value;
+ t.style.fontSize=document.getElementById('docFontSize').value;
+}
+function applyMargin(){ document.getElementById('docText').style.padding='0'; document.querySelector('#doc textarea').parentElement.style.padding=document.getElementById('docMargin').value; }
+function toggleStyle(cls){
+ const t=document.getElementById('docText');
+ t.classList.toggle(cls);
+ document.getElementById(cls==='b'?'bBold':cls==='i'?'bItal':'bUnd').classList.toggle('on');
+}
+function saveDraft(){ try{localStorage.setItem('ps_draft', document.getElementById('docText').value);}catch(e){} }
+function loadDraft(){ try{document.getElementById('docText').value=localStorage.getItem('ps_draft')||'';}catch(e){} }
 function printDoc(){
-  go('doc');
-  window.print();
+ go('doc');
+ document.getElementById('docHeaderPrint').textContent=document.getElementById('docHeader').value;
+ document.getElementById('docFooterPrint').textContent=document.getElementById('docFooter').value;
+ const bw=document.getElementById('docColor').value==='Black & White';
+ document.getElementById('docText').style.filter=bw?'grayscale(1)':'none';
+ logHistory('Document print'); window.print();
 }
+
+/* ---- PHOTO ---- */
 document.getElementById('photoInput').addEventListener('change', function(){
-  const file=this.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    document.getElementById('photoImg').src=e.target.result;
-    document.getElementById('photoPreview').style.display='block';
-  };
-  reader.readAsDataURL(file);
+ const file=this.files[0]; if(!file) return;
+ const reader=new FileReader();
+ reader.onload=e=>{ document.getElementById('photoImg').src=e.target.result; document.getElementById('photoPreview').style.display='block'; applyPhotoFilter(); };
+ reader.readAsDataURL(file);
 });
-function printPhoto(){
-  go('photo');
-  window.print();
+function applyPhotoFilter(){ document.getElementById('photoImg').style.filter = document.getElementById('photoColor').value==='Black & White' ? 'grayscale(1)' : 'none'; }
+function printPhoto(){ go('photo'); logHistory('Photo print'); window.print(); }
+
+/* ---- UPLOAD & EDIT ---- */
+const canvas=document.getElementById('editCanvas'), ctx=canvas.getContext('2d');
+let photos=[], active=-1;
+let cropMode=false, cropRect=null, dragStart=null;
+let drawMode=false, brushColor='#e53935';
+
+document.getElementById('editInput').addEventListener('change', function(){
+ const file=this.files[0]; if(!file) return;
+ const reader=new FileReader();
+ reader.onload=e=>{
+  const img=new Image();
+  img.onload=()=>{
+   photos.push({img:img, rotation:0, flipH:1, flipV:1, strokes:[], caption:''});
+   active=photos.length-1; renderGallery(); draw();
+  };
+  img.src=e.target.result;
+ };
+ reader.readAsDataURL(file); this.value='';
+});
+function renderGallery(){
+ const g=document.getElementById('gallery'); g.innerHTML='';
+ photos.forEach((p,i)=>{
+  const im=document.createElement('img');
+  im.src=p.img.src; im.className='gthumb'+(i===active?' sel':'');
+  im.onclick=()=>{active=i; draw(); renderGallery();};
+  g.appendChild(im);
+ });
 }
+function cur(){ return active>=0? photos[active]: null; }
+function rotateP(d){ const p=cur(); if(!p)return; p.rotation=(p.rotation+d+360)%360; draw(); }
+function flipP(ax){ const p=cur(); if(!p)return; if(ax==='h')p.flipH*=-1; else p.flipV*=-1; draw(); }
+function duplicateP(){ const p=cur(); if(!p)return; const copy=JSON.parse(JSON.stringify({rotation:p.rotation,flipH:p.flipH,flipV:p.flipV,strokes:p.strokes,caption:p.caption})); copy.img=p.img; photos.push(copy); active=photos.length-1; renderGallery(); draw(); }
+function deleteP(){ if(active<0)return; photos.splice(active,1); active=photos.length?0:-1; renderGallery(); if(active>=0)draw(); else ctx.clearRect(0,0,canvas.width,canvas.height); }
+function clearStrokes(){ const p=cur(); if(!p)return; p.strokes=[]; draw(); }
+function setColor(c,el){ brushColor=c; document.querySelectorAll('.sw').forEach(s=>s.classList.remove('sel')); el.classList.add('sel'); }
+function toggleDraw(){ drawMode=!drawMode; cropMode=false; document.getElementById('drawBtn').classList.toggle('on',drawMode); document.getElementById('cropBtn').classList.remove('on'); document.getElementById('drawOptions').style.display=drawMode?'block':'none'; }
+function toggleCrop(){ cropMode=!cropMode; drawMode=false; document.getElementById('cropBtn').classList.toggle('on',cropMode); document.getElementById('drawBtn').classList.remove('on'); document.getElementById('drawOptions').style.display='none'; cropRect=null; draw(); }
+
+function canvasPos(e){
+ const r=canvas.getBoundingClientRect();
+ const t=e.touches?e.touches[0]:e;
+ return {x:(t.clientX-r.left)*(canvas.width/r.width), y:(t.clientY-r.top)*(canvas.height/r.height)};
+}
+function ptDown(e){ const p=cur(); if(!p)return; e.preventDefault(); const pos=canvasPos(e);
+ if(drawMode){ p.strokes.push({color:brushColor,size:+document.getElementById('brushSize').value,pts:[pos]}); }
+ else if(cropMode){ dragStart=pos; cropRect={x:pos.x,y:pos.y,w:0,h:0}; }
+}
+function ptMove(e){ if(!(drawMode||cropMode)||active<0) return; e.preventDefault(); const pos=canvasPos(e); const p=cur();
+ if(drawMode){ const s=p.strokes[p.strokes.length-1]; if(s){ s.pts.push(pos); draw(); } }
+ else if(cropMode && dragStart){ cropRect={x:Math.min(dragStart.x,pos.x),y:Math.min(dragStart.y,pos.y),w:Math.abs(pos.x-dragStart.x),h:Math.abs(pos.y-dragStart.y)}; draw(); }
+}
+function ptUp(){ dragStart=null; }
+canvas.addEventListener('mousedown',ptDown); canvas.addEventListener('mousemove',ptMove); window.addEventListener('mouseup',ptUp);
+canvas.addEventListener('touchstart',ptDown,{passive:false}); canvas.addEventListener('touchmove',ptMove,{passive:false}); canvas.addEventListener('touchend',ptUp);
+
+function applyCrop(){
+ const p=cur(); if(!p||!cropRect||cropRect.w<5||cropRect.h<5) return;
+ const data=ctx.getImageData(cropRect.x,cropRect.y,cropRect.w,cropRect.h);
+ const tmp=document.createElement('canvas'); tmp.width=cropRect.w; tmp.height=cropRect.h;
+ tmp.getContext('2d').putImageData(data,0,0);
+ const img=new Image();
+ img.onload=()=>{ p.img=img; p.rotation=0; p.flipH=1; p.flipV=1; p.strokes=[]; cropRect=null; cropMode=false; document.getElementById('cropBtn').classList.remove('on'); draw(); renderGallery(); };
+ img.src=tmp.toDataURL();
+}
+
+function draw(){
+ const p=cur();
+ if(!p){ ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+ const b=document.getElementById('bright').value, c=document.getElementById('contrast').value, s=document.getElementById('saturate').value, f=document.getElementById('photoFilterMode').value;
+ const cap=document.getElementById('caption').value; p.caption=cap;
+ const swapped=p.rotation===90||p.rotation===270;
+ const cw=600, ch=swapped?600:450;
+ canvas.width=cw; canvas.height=ch+(cap?40:0);
+ ctx.save();
+ ctx.filter='brightness('+b+'%) contrast('+c+'%) saturate('+s+'%) '+(f!=='none'?f:'');
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.translate(canvas.width/2, ch/2); ctx.rotate(p.rotation*Math.PI/180); ctx.scale(p.flipH,p.flipV);
+ const drawW=swapped?ch:cw, drawH=swapped?cw:ch;
+ const scale=Math.min(drawW/p.img.width, drawH/p.img.height);
+ const w=p.img.width*scale, h=p.img.height*scale;
+ ctx.drawImage(p.img,-w/2,-h/2,w,h);
+ ctx.restore();
+ ctx.filter='none';
+ p.strokes.forEach(st=>{
+  ctx.strokeStyle=st.color; ctx.lineWidth=st.size; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath(); st.pts.forEach((pt,i)=>{ i===0?ctx.moveTo(pt.x,pt.y):ctx.lineTo(pt.x,pt.y); }); ctx.stroke();
+ });
+ if(cropMode && cropRect){ ctx.strokeStyle='#0057a8'; ctx.setLineDash([6,4]); ctx.lineWidth=2; ctx.strokeRect(cropRect.x,cropRect.y,cropRect.w,cropRect.h); ctx.setLineDash([]); }
+ if(cap){ ctx.fillStyle='#000'; ctx.font='20px Georgia,serif'; ctx.textAlign='center'; ctx.fillText(cap, canvas.width/2, ch+28); }
+}
+
+function renderPhotoDataURL(p){
+ const tmp=document.createElement('canvas'); const tctx=tmp.getContext('2d');
+ const swapped=p.rotation===90||p.rotation===270; const cw=600, ch=swapped?600:450;
+ tmp.width=cw; tmp.height=ch+(p.caption?40:0);
+ tctx.save(); tctx.translate(cw/2, ch/2); tctx.rotate(p.rotation*Math.PI/180); tctx.scale(p.flipH,p.flipV);
+ const drawW=swapped?ch:cw, drawH=swapped?cw:ch;
+ const scale=Math.min(drawW/p.img.width, drawH/p.img.height);
+ const w=p.img.width*scale, h=p.img.height*scale;
+ tctx.drawImage(p.img,-w/2,-h/2,w,h); tctx.restore();
+ p.strokes.forEach(st=>{ tctx.strokeStyle=st.color; tctx.lineWidth=st.size; tctx.lineCap='round'; tctx.lineJoin='round';
+  tctx.beginPath(); st.pts.forEach((pt,i)=>{ i===0?tctx.moveTo(pt.x,pt.y):tctx.lineTo(pt.x,pt.y); }); tctx.stroke(); });
+ if(p.caption){ tctx.fillStyle='#000'; tctx.font='20px Georgia,serif'; tctx.textAlign='center'; tctx.fillText(p.caption, cw/2, ch+28); }
+ return tmp.toDataURL();
+}
+
+function printEdit(){
+ go('edit');
+ const cols=+document.getElementById('cols').value;
+ let old=document.getElementById('printGrid'); if(old) old.remove();
+ const wrap=document.createElement('div'); wrap.id='printGrid'; wrap.className='printOnly';
+ wrap.style.display='grid'; wrap.style.gridTemplateColumns='repeat('+cols+',1fr)'; wrap.style.gap='10px';
+ const list = photos.length? photos : (cur()?[cur()]:[]);
+ list.forEach(p=>{ const im=document.createElement('img'); im.src=renderPhotoDataURL(p); im.style.width='100%'; wrap.appendChild(im); });
+ document.getElementById('edit').appendChild(wrap);
+ logHistory('Photo edit print ('+list.length+' photo'+(list.length!==1?'s':'')+')');
+ window.print();
+}
+
+/* ---- QR ---- */
+let qrObj=null;
+function makeQR(){
+ const val=document.getElementById('qrText').value;
+ const box=document.getElementById('qrbox'); box.innerHTML='';
+ if(!val || typeof QRCode==='undefined') return;
+ qrObj = new QRCode(box, {text:val, width:220, height:220});
+}
+function printQR(){ go('qr'); logHistory('QR code print'); window.print(); }
 </script>
 </body>
 </html>
