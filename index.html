@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Print Station</title>
+<style>
+  :root{
+    --bg:#eef1f4; --panel:#ffffff; --ink:#1d2733; --sub:#6b7684;
+    --accent:#0057a8; --accent2:#00a19a; --border:#dce1e7;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12161b; --panel:#1b2028; --ink:#eef1f4; --sub:#8b95a3; --border:#2b323c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161b; --panel:#1b2028; --ink:#eef1f4; --sub:#8b95a3; --border:#2b323c;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100%;
+  }
+  header{
+    width:100%; max-width:480px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff; padding:calc(20px + env(safe-area-inset-top,0px)) 20px 22px;
+    border-radius:0 0 22px 22px;
+  }
+  header h1{margin:0; font-size:1.25rem; font-weight:700;}
+  header p{margin:4px 0 0; font-size:.82rem; opacity:.9;}
+  main{width:100%; max-width:480px; padding:18px 16px 40px; flex:1;}
+
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:6px;}
+  .tile{
+    background:var(--panel); border:1px solid var(--border); border-radius:16px;
+    padding:20px 14px; text-align:center; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tile:active{opacity:.75;}
+  .tile .ic{font-size:2rem; margin-bottom:8px;}
+  .tile .lb{font-size:.85rem; font-weight:600;}
+
+  .backrow{display:flex; align-items:center; gap:8px; margin:2px 0 16px; color:var(--accent); font-weight:600; font-size:.9rem;}
+  .backrow span{cursor:pointer;}
+
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px;}
+  .card label{display:block; font-size:.75rem; color:var(--sub); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:.03em;}
+  .row{display:flex; gap:10px;}
+  .row .card{flex:1;}
+  select{
+    width:100%; font-size:.95rem; padding:10px; border-radius:10px;
+    border:1px solid var(--border); background:var(--bg); color:var(--ink); font-family:inherit;
+  }
+  textarea{
+    width:100%; min-height:260px; border:0; padding:0; resize:vertical;
+    font-family:Georgia,serif; font-size:16px; background:transparent; color:var(--ink); outline:none;
+  }
+  #photoPreview{display:none; text-align:center;}
+  #photoPreview img{max-width:100%; border-radius:8px; margin-top:8px;}
+  input[type=file]{font-size:.85rem; color:var(--sub);}
+
+  .printbtn{
+    width:100%; padding:16px; border:0; border-radius:14px; margin-top:4px;
+    background:var(--accent); color:#fff; font-size:1rem; font-weight:700;
+    cursor:pointer; -webkit-tap-highlight-color:transparent;
+  }
+  .printbtn:active{opacity:.85;}
+  .note{color:var(--sub); font-size:.75rem; text-align:center; margin-top:12px;}
+
+  @media print{
+    header, .backrow, .card label, select, .printbtn, .note, #printDocTitle{display:none !important;}
+    body{background:#fff;}
+    main{max-width:none; padding:0;}
+    .card{border:0; padding:0; margin:0;}
+    textarea{font-size:12pt;}
+    #photoPreview{display:block !important;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Print Station</h1>
+  <p>Print documents & photos from this device</p>
+</header>
+<main>
+
+  <!-- HOME -->
+  <div class="screen active" id="home">
+    <div class="grid">
+      <div class="tile" onclick="go('doc')">
+        <div class="ic">📄</div>
+        <div class="lb">Print Document</div>
+      </div>
+      <div class="tile" onclick="go('photo')">
+        <div class="ic">🖼️</div>
+        <div class="lb">Print Photo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT -->
+  <div class="screen" id="doc">
+    <div class="backrow"><span onclick="go('home')">← Home</span></div>
+    <div class="row">
+      <div class="card">
+        <label>Paper size</label>
+        <select id="docSize"><option>Letter</option><option>A4</option><option>Legal</option></select>
+      </div>
+      <div class="card">
+        <label>Copies</label>
+        <select id="docCopies"><option>1</option><option>2</option><option>3</option><option>5</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <label>Document text</label>
+      <textarea id="docText" placeholder="Type or paste your document here…"></textarea>
+    </div>
+    <button class="printbtn" onclick="printDoc()">Print Document</button>
+    <div class="note">Opens your device's print dialog — choose your Epson there.</div>
+  </div>
+
+  <!-- PHOTO -->
+  <div class="screen" id="photo">
+    <div class="backrow"><span onclick="go('home')">← Home</span></div>
+    <div class="row">
+      <div class="card">
+        <label>Layout</label>
+        <select id="photoLayout"><option>Full page</option><option>4×6</option><option>Borderless</option></select>
+      </div>
+      <div class="card">
+        <label>Copies</label>
+        <select id="photoCopies"><option>1</option><option>2</option><option>3</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <label>Choose photo</label>
+      <input type="file" id="photoInput" accept="image/*">
+      <div id="photoPreview"><img id="photoImg" alt=""></div>
+    </div>
+    <button class="printbtn" onclick="printPhoto()">Print Photo</button>
+    <div class="note">Opens your device's print dialog — choose your Epson there.</div>
+  </div>
+
+</main>
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function printDoc(){
+  go('doc');
+  window.print();
+}
+document.getElementById('photoInput').addEventListener('change', function(){
+  const file=this.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('photoImg').src=e.target.result;
+    document.getElementById('photoPreview').style.display='block';
+  };
+  reader.readAsDataURL(file);
+});
+function printPhoto(){
+  go('photo');
+  window.print();
+}
+</script>
+</body>
+</html>
